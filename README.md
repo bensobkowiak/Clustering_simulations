@@ -8,7 +8,7 @@ The main changes from this code are:
 
 1. The inside and outside outbreaks can have different infection rate (inf.rate.in and inf.rate.out) and different mutation rates (mut.prob.site.in and mut.prob.site.out).
 
-2. Either a lag time in days (time.lag.outside), or a minimum percentage of outside susceptibles infected (min.perc.outside.inf), can be specified before any infection can be introduced to the inside population.
+2. Either a lag time in days (time.lag.outside), or a minimum percentage of outside susceptibles infected (min.perc.outside.inf), can be specified before any infection can be introduced to the inside population. N.B. both options can be null for no lag but both options can not be specified together.
 
 3. Inside of randomly chosing the source of a new infection from all currently infected individuals, the source of infection will be chosen from the pool of currently infected individuals that are closest to a putative infection time, which is drawn from a gamma distribution with a specified mean (mean.infect).
 
