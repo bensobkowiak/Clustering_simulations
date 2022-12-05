@@ -1,4 +1,4 @@
-# Clustering_simulations
+# Clustering Simulations
 
 This repository contains the scripts needed to simulate outbreaks and perform clustering based on cov2clusters (Sobkowiak et.al. 2022 https://doi.org/10.1186/s12864-022-08936-4).
 
