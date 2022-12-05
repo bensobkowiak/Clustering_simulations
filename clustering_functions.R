@@ -63,9 +63,7 @@ numberClusters<-function(acceptTrans){
   return(cluster_results)
 }
 
-
 ## Main clustering function
-
 cov2clusters_sim<-function(distmat=distmat,dates=dates,
                            beta=c(3,-0.66,-0.075),
                            dateThreshold=40,
