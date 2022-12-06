@@ -2,12 +2,11 @@
 # https://github.com/Pouya-Haghmaram/Clustering-outbreaks, which is an altered version 
 # of simulateoutbreak.R in seedy https://github.com/cran/seedy/blob/master/R/simulateoutbreak.R
 
-
 simulate_outbreak <- # Outbreak simulation function 
   function(init.sus, init.sus.in, inf.rate, inf.rate.in, intr.rate ,rem.rate, 
            mut.prob.site.out=0.0001,mut.prob.site.in=0.0001, nmat=NULL, equi.pop=10000, 
            shape=flat,init.inf=1, inoc.size=1, time.lag.outside=NULL, 
-           min.perc.outside.inf = NULL,mean.infect=6,rate.infect=3,samples.per.time=1, samp.schedule="random", 
+           min.perc.outside.inf = NULL,shape.infect=6,rate.infect=3,samples.per.time=1, samp.schedule="random", 
            samp.freq=500, full=TRUE, min.cases=1, min.cases.in=1, feedback=500, g.len=10000, 
            ref.strain=NULL, ...) {
     
@@ -262,7 +261,7 @@ simulate_outbreak <- # Outbreak simulation function
             } else if (is.null(nmat)) {
               #inf.source <- c(inf.source, sample(cur.inf,1)) # sample source at random
               # new code - non-random instead based on gamma distribution
-              put.inf.time<- rgamma(n=1, shape=mean.infect, rate=rate.infect) # putative infection time
+              put.inf.time<- rgamma(n=1, shape=shape.infect, rate=rate.infect) # putative infection time
               removed<-which(!inf.ID %in% cur.inf)
               if (length(removed)>0){
               curr.inf.time<-inf.times[-which(!inf.ID %in% cur.inf)]
@@ -403,7 +402,7 @@ simulate_outbreak <- # Outbreak simulation function
               if (length(cur.inf.in)>1){
                 #inf.source.in <- c(inf.source.in, sample(cur.inf.in,1)) # sample source at random
                 # Same as outside infection - infection source based on gamma distribution of infection times
-                put.inf.time<- rgamma(n=1, shape=mean.infect, rate=rate.infect) # putative infection time
+                put.inf.time<- rgamma(n=1, shape=shape.infect, rate=rate.infect) # putative infection time
                 removed<-which(!inf.ID.in %in% cur.inf.in)
                 if (length(removed)>0){
                   curr.inf.time<-inf.times.in[-which(!inf.ID.in %in% cur.inf.in)]
@@ -633,3 +632,4 @@ simulate_outbreak <- # Outbreak simulation function
       )))
     }
   }
+
