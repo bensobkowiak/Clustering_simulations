@@ -378,7 +378,7 @@ simulate_outbreak <- # Outbreak simulation function
                                              time.lag.outside)) & 
             (length(min.perc.outside.inf)==0 || 
              (length(min.perc.outside.inf)!=0 & length(inf.ID)>= 
-              init.sus.out/100*min.perc.outside.inf))){
+              init.sus/100*min.perc.outside.inf))){
           
           pinf.in <- rep(0, length(cur.sus.in))
           
