@@ -3,11 +3,15 @@
 # of simulateoutbreak.R in seedy https://github.com/cran/seedy/blob/master/R/simulateoutbreak.R
 
 simulate_outbreak <- # Outbreak simulation function 
-  function(init.sus, init.sus.in, inf.rate, inf.rate.in, intr.rate ,rem.rate, 
-           mut.prob.site.out=0.0001,mut.prob.site.in=0.0001, nmat=NULL, equi.pop=10000, 
+  function(init.sus=10, init.sus.in=10, inf.rate=1, inf.rate.in=1, intr.rate=0,rem.rate=0.5, 
+           mut.rate.out=0.0008,mut.rate.in=0.0008, 
+           nmat=NULL, equi.pop=10000, 
            shape=flat,init.inf=1, inoc.size=1, time.lag.outside=NULL, 
-           min.perc.outside.inf = NULL,shape.infect=6,rate.infect=3,samples.per.time=1, samp.schedule="random", 
-           samp.freq=500, full=TRUE, min.cases=1, min.cases.in=1, feedback=500, g.len=10000, 
+           min.init.dist=0,max.init.dist=0,
+           min.perc.outside.inf = NULL,shape.infect=6,rate.infect=3,
+           samples.per.time=1, samp.schedule="random", 
+           samp.freq=500, full=TRUE, min.cases=1, min.cases.in=1, 
+           feedback=500, g.len=10000, 
            ref.strain=NULL, ...) {
     
     # Warning messages
@@ -22,10 +26,6 @@ simulate_outbreak <- # Outbreak simulation function
     
     if (init.sus.in%%1!=0 || init.sus.in<0) {
       stop("init.sus.in must be a non-negative integer.")
-    }
-    
-    if (init.inf!=1) {
-      stop("init.inf must be 1.")
     }
     
     if (inoc.size%%1!=0 || inoc.size<1) {
@@ -151,8 +151,8 @@ simulate_outbreak <- # Outbreak simulation function
         g.len <- length(ref.strain)
       }
       
-      totcurstrains <- 1 # current list of strains
-      uniquestrains <- 1 # Number of unique strain types
+      totcurstrains <- 1:init.inf # current list of strains
+      uniquestrains <- 1:init.inf # Number of unique strain types
       libr <- list() # list of mutation locations for each genotype
       mut.nuc <- list() # nucleotides at mutation locations
       freq.log <- list() # List of strain frequencies for each infective
@@ -164,22 +164,34 @@ simulate_outbreak <- # Outbreak simulation function
         if (sample.times[i]>rec.times[i]) {
           sample.times[i] <- Inf 
         }
-        if (i == 1) {
+        if (init.inf == 1) {
           libr[[i]] <- NA 
           mut.nuc[[i]] <- NA      
         } else {
-          libr[[i]] <- sample(g.len,1)
-          mut.nuc[[i]] <- sample((1:4)[-ref.strain[libr[[i]]]], 1)
+          start.dist<-sample(min.init.dist:max.init.dist,1)# random distance from reference up to max distance
+          if (start.dist==0){
+            libr[[i]] <- NA 
+            mut.nuc[[i]] <- NA  
+          } else {
+          libr[[i]] <- sample(g.len,start.dist) # take start.dist number of loci
+          startsubs<-numeric()
+          ref_nucs<-ref.strain[libr[[i]]]
+          for (subs in 1:start.dist){
+            newnuc<-sample((1:4)[-ref_nucs[subs]],1)
+            startsubs<-c(startsubs,newnuc)
+          }
+          mut.nuc[[i]] <- startsubs
+          }
         }
         freq.log[[i]] <- 1
-        strain.log[[i]] <- 1
+        strain.log[[i]] <- i
       }
       
       for (i in (init.inf+1):(init.sus+init.inf)) {
         freq.log[[i]] <- 0
         strain.log[[i]] <- 0
       }
-      types <- 1 # Cumulative number of strain types
+      types <- init.inf # Cumulative number of strain types
       
       #Sample logs
       if (full) {
@@ -255,17 +267,17 @@ simulate_outbreak <- # Outbreak simulation function
           for (kp in 1:sum(pinf)) {
             tot.inf <- tot.inf+1
             newinfect <- cur.sus[(which(pinf==1)[kp])-(kp-1)] 
-          
+            
             if (length(cur.inf)==1) {
               inf.source <- c(inf.source, cur.inf)
             } else if (is.null(nmat)) {
               #inf.source <- c(inf.source, sample(cur.inf,1)) # sample source at random
               # new code - non-random instead based on gamma distribution
-              put.inf.time<- rgamma(n=1, shape=shape.infect, rate=rate.infect) # putative infection time
+              put.inf.time<- round(rgamma(n=1, shape=shape.infect, rate=rate.infect),0) # putative infection time
               removed<-which(!inf.ID %in% cur.inf)
               if (length(removed)>0){
-              curr.inf.time<-inf.times[-which(!inf.ID %in% cur.inf)]
-              time.since.infect<- time-curr.inf.time
+                curr.inf.time<-inf.times[-which(!inf.ID %in% cur.inf)]
+                time.since.infect<- time-curr.inf.time
               } else {
                 time.since.infect<- time-inf.times
               }
@@ -286,7 +298,8 @@ simulate_outbreak <- # Outbreak simulation function
             cur.inf <- c(cur.inf, newinfect) # add to current infectives
             cur.sus <- cur.sus[-which(cur.sus==newinfect)] # Remove susceptible
             inf.times <- c(inf.times, time) # new infection time
-            rec.times <- c(rec.times, time + 1 + rgeom(1,rem.rate)) # Don't recover today!
+            recover.time<-time + 1 + rgeom(1,rem.rate)
+            rec.times <- c(rec.times, recover.time) # Don't recover today!
             
             if (samp.schedule == "individual") {
               sample.times <- c(sample.times, time+samp.freq)
@@ -328,7 +341,10 @@ simulate_outbreak <- # Outbreak simulation function
             
             for (str in 1:length(strain.log[[newinfect]])) {
               for (fre in 1:length(freq.log[[newinfect]])) {
-                num_sub <- rbinom(1, g.len, mut.prob.site.out)
+                inf.times[which(inf.ID==inf.source[tot.inf])]
+                num_sub <- rbinom(1, g.len, (mut.rate.out)*
+                                    (time-inf.times[which(inf.ID==inf.source[tot.inf])])) # scale mutation rate 
+                                                                                          # by number of days infection persists
                 
                 if(num_sub>0){
                   types <- types+1
@@ -402,7 +418,7 @@ simulate_outbreak <- # Outbreak simulation function
               if (length(cur.inf.in)>1){
                 #inf.source.in <- c(inf.source.in, sample(cur.inf.in,1)) # sample source at random
                 # Same as outside infection - infection source based on gamma distribution of infection times
-                put.inf.time<- rgamma(n=1, shape=shape.infect, rate=rate.infect) # putative infection time
+                put.inf.time<- round(rgamma(n=1, shape=shape.infect, rate=rate.infect),0) # putative infection time
                 removed<-which(!inf.ID.in %in% cur.inf.in)
                 if (length(removed)>0){
                   curr.inf.time<-inf.times.in[-which(!inf.ID.in %in% cur.inf.in)]
@@ -424,13 +440,16 @@ simulate_outbreak <- # Outbreak simulation function
               cur.inf.in <- c(cur.inf.in, newinfect.in) # add to current infectives
               cur.sus.in <- cur.sus.in[-which(cur.sus.in==newinfect.in)] # Remove susceptible
               inf.times.in <- c(inf.times.in, time) # new infection time
-              rec.times.in <- c(rec.times.in, time + 1 + rgeom(1,rem.rate)) 
+              recover.time <- time + 1 + rgeom(1,rem.rate)
+              rec.times.in <- c(rec.times.in, recover.time) 
               
               # pass on strain
               src1 <- inf.ID.in[which(inf.ID.in==inf.source.in[tot.inf.in])] # Source of infection
               genomeID.in[tot.inf.in] <- genomeID.in[which(inf.ID.in==inf.source.in[tot.inf.in])]
               # mutate existing strains for each individual
-              num_sub <- rbinom(1, g.len, mut.prob.site.in)
+              num_sub <- rbinom(1, g.len, (mut.rate.in)*
+                                  (time-inf.times.in[which(inf.ID.in==inf.source.in[tot.inf.in])]))
+              
               
               if(num_sub>0){
                 types <- types+1
@@ -486,11 +505,13 @@ simulate_outbreak <- # Outbreak simulation function
             inf.times.in <- c(inf.times.in, time) # new infection time
             inf.source.in <- c(inf.source.in, infector_introduction)
             introduction <- c(introduction, 1)
-            rec.times.in <- c(rec.times.in, time + 1 + rgeom(1,rem.rate)) 
+            recover.time <- time + 1 + rgeom(1,rem.rate)
+            rec.times.in <- c(rec.times.in, recover.time) 
             genomeID.in[tot.inf.in] <- strain.log[[infector_introduction]]
             
             # mutate existing strains for each individual
-            num_sub <- rbinom(1, g.len, mut.prob.site.in)
+            num_sub <- rbinom(1, g.len, (mut.rate.in)*
+                                (time-inf.times[which(inf.ID==inf.source.in[tot.inf.in])]))
             
             if(num_sub>0){
               types <- types+1
@@ -621,14 +642,15 @@ simulate_outbreak <- # Outbreak simulation function
                             obs.freq=obs.freq, obs.strain=obs.strain,
                             
                             libr=libr, nuc=mut.nuc, librstrains=totcurstrains, endtime=time,
-                            parameters=c(inf.rate, inf.rate.in, rem.rate, g.len, mut.prob.site.in,
-                                         mut.prob.site.out, intr.rate)
+                            parameters=c(inf.rate, inf.rate.in, rem.rate, g.len, mut.rate.in,
+                                         mut.rate.out, intr.rate)
       )))
     } else {
       return(invisible(list(epidata=cbind(inf.ID, inf.times, rec.times, inf.source), 
                             sampledata=cbind(sampleID, sampletimes, sampleWGS),
                             libr=libr, nuc=mut.nuc, librstrains=totcurstrains, endtime=time,
-                            parameters=c(inf.rate, inf.rate.in, rem.rate, g.len, mut.prob.site.out,mut.prob.site.in, intr.rate)
+                            parameters=c(inf.rate, inf.rate.in, rem.rate, g.len, mut.rate.out,mut.rate.in, intr.rate)
       )))
     }
   }
+
