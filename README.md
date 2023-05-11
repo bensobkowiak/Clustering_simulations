@@ -1,8 +1,8 @@
 # Clustering Simulations
 
-This repository contains the scripts needed to simulate outbreaks and perform clustering based on cov2clusters (Sobkowiak et.al. 2022 https://doi.org/10.1186/s12864-022-08936-4).
+This repository contains the scripts needed to simulate outbreaks and perform clustering used in the paper Sobkowiak et. al. The utility of genomic sequence data for informative clustering under different outbreak epidemiological scenarios and sampling strategies (2023). In preparation.
 
-The clustering function is based on an altered version of simulateoutbreaks.R from the package SEEDY (Version 1.3) (Worby et.al. 2022 https://doi.org/10.1371/journal.pone.0129745) by Pouya Haghmaram, documented here: https://github.com/Pouya-Haghmaram/Clustering-outbreaks.
+The outbreak simulation function is based on an altered version of simulateoutbreaks.R from the package SEEDY (Version 1.3) (Worby et.al. 2022 https://doi.org/10.1371/journal.pone.0129745) by Pouya Haghmaram, documented here: https://github.com/Pouya-Haghmaram/Clustering-outbreaks. The clustering used is based on cov2clusters (Sobkowiak et.al. 2022 https://doi.org/10.1186/s12864-022-08936-4).
 
 The main changes from this code are:
 
