@@ -165,7 +165,7 @@ for (m in 1:2){
         set_graph_attr("par", W$parameters)
   }
 }
-setwd("~/Documents/SFU/Covid_simulation/Figure3/Test")
+
 saveRDS(results, file="outbreak_plots_figure3.RData")
 write.csv(Clust_res,"Figure3A_TPR_FPR.csv",row.names = F)
 
