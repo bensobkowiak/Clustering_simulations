@@ -309,8 +309,6 @@ for (m in 1:2){
   }
 }
 
-setwd("./Test/")
-
 saveRDS(results, file="Figure4Plots.RData")
 
 plots<-readRDS("Figure4Plots.RData")
