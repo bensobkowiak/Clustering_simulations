@@ -14,7 +14,7 @@ options(stringsAsFactors = F)
 source("~/R/cov2clusters_simulation.R")
 source("~/R/simulate_outbreak.R")
 
-ref<-read.fasta("MN908947.3.fasta",forceDNAtolower = F) # download Wuhan1 reference 
+ref<-read.fasta("../MN908947.3.fasta",forceDNAtolower = F) # download Wuhan1 reference 
 ref<-as.character(unlist(ref))
 ref[which(ref=="A")]<-1
 ref[which(ref=="C")]<-2
