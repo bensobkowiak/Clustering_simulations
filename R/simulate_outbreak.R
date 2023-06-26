@@ -6,7 +6,7 @@ simulate_outbreak <- # Outbreak simulation function
   function(init.sus=10, init.sus.in=10, inf.rate=1, inf.rate.in=1, intr.rate=0,rem.rate=0.5, 
            mut.rate.out=0.0008,mut.rate.in=0.0008, 
            nmat=NULL, equi.pop=10000, 
-           shape=flat,init.inf=1, inoc.size=1, time.lag.outside=NULL, 
+           init.inf=1, inoc.size=1, time.lag.outside=NULL, 
            min.init.dist=0,max.init.dist=0,
            min.perc.outside.inf = NULL,shape.infect=6,rate.infect=3,
            samples.per.time=1, samp.schedule="random", 
@@ -71,10 +71,6 @@ simulate_outbreak <- # Outbreak simulation function
     if (intr.rate<0 | intr.rate>1) {
       stop("intr.rate (introduction rate) must be between 0 and 1.")
     }
-    
-    if (!is.function(shape)) {
-      stop("'shape' must be a function.")
-    } 
     
     if (!is.null(nmat)) {
       if (!is.matrix(nmat)) {
